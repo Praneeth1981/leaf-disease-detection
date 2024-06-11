@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plant Disease Identifier</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>🌱 Plant Disease Identifier 🌿</h1>
+    <p>This classification model can be used to identify the diseases of a variety of plants like apple, blueberry, cherry, corn, grape, orange, pepper, potato, strawberry, tomato.</p>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required><br><br>
+        <input type="submit" value="Predict">
+    </form>
+    <div id="output"></div>
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('output').innerHTML = `<p>Error: ${data.error}</p>`;
+                } else {
+                    document.getElementById('output').innerHTML = `
+                        <h2>Prediction</h2>
+                        <p>Prediction: ${data.prediction}</p>
+                        <p>Confidence: ${data.confidence.toFixed(2)}</p>
+                        <h2>Confidence Scores for Predicted Classes</h2>
+                        <div id="bar-chart"></div>
+                        <h2>Cure Information</h2>
+                        <p>${data.cure_info}</p>
+                    `;
+                    Plotly.newPlot('bar-chart', JSON.parse(data.bar_chart));
+                }
+            })
+            .catch(error => {
+                document.getElementById('output').innerHTML = `<p>Error: ${error}</p>`;
+            });
+        });
+    </script>
+</body>
+</html>
